@@ -17,7 +17,7 @@
           - origin_y
           - width
           - height
-        - categories[0]
+        - categories
           - 0:
             - category_name
             - score
@@ -27,7 +27,7 @@
           - origin_y
           - width
           - height
-        - categories[0]
+        - categories
           - 0:
             - category_name
             - score
