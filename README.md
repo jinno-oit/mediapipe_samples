@@ -4,9 +4,9 @@
 ## object_detection
 - https://developers.google.com/mediapipe/solutions/vision/object_detector
 - ***examples of how to reference result data `results`***
-  - x-coordinate of upper left point of the i-th object's bounding box
+  - x-coordinate of upper left point of the i-th object's bounding box<br>
     `results.detections[i].bounding_box.origin_x`
-  - category_name (e.g.`parson`) of the i-th object
+  - category_name (e.g.`parson`) of the i-th object<br>
     `results.detections[i].categories[0].category_name`
 - ***data structure of result***
   - results
@@ -36,7 +36,7 @@
 ## image_segmentation
 - https://developers.google.com/mediapipe/solutions/vision/image_segmenter
 - ***examples of how to reference result data `results`***
-  - i-th segmented_mask (mediapipe image --> ndarray)
+  - i-th segmented_mask (mediapipe image --> ndarray)<br>
     `results[0].numpy_view()`
 - ***data structure of result***
   - results (mediapipe image)
@@ -47,11 +47,11 @@
 ## hand_landmarker
 - https://developers.google.com/mediapipe/solutions/vision/hand_landmarker
 - ***examples of how to reference result data `results`***
-  - normalized x-coordinate the j-th landmark of the i-th hand
+  - normalized x-coordinate the j-th landmark of the i-th hand<br>
     `results.hand_landmarks[i][j].x`
-  - x-coordinate the j-th landmark of the i-th hand
+  - x-coordinate the j-th landmark of the i-th hand<br>
     `int(results.hand_landmarks[i][j].x * width)`
-  - category_name (e.g.`Right`) of the i-th hand
+  - category_name (e.g.`Right`) of the i-th hand<br>
     `results.handedness[i][0].category_name`
 - ***data structure of result***
   - results
