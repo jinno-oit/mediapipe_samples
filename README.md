@@ -1,4 +1,5 @@
 # mediapipe_samples
+- <mediapipe 0.9.3.0> 
 - [MediaPipe Examples](https://developers.google.com/mediapipe/solutions/examples)
 
 ## object_detection
