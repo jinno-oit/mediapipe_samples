@@ -1,6 +1,7 @@
 import os
 import urllib.request
 import time
+import numpy as np
 import cv2
 import mediapipe as mp
 
@@ -15,18 +16,23 @@ class MediapipeFaceDetection():
     FONT_THICKNESS = 1
     TEXT_COLOR = (255, 0, 0)  # red
 
-    def __init__(self, model_folder_path=model_folder_path, base_url=base_url, model_name=model_name):
-        BaseOptions = mp.tasks.BaseOptions
-        FaceDetector = mp.tasks.vision.FaceDetector
-        FaceDetectorOptions = mp.tasks.vision.FaceDetectorOptions
-        VisionRunningMode = mp.tasks.vision.RunningMode
+    def __init__(
+            self,
+            model_folder_path=model_folder_path,
+            base_url=base_url,
+            model_name=model_name,
+            min_detection_confidence=0.5,
+            min_suppression_threshold=0.3
+            ):
 
         model_path = self.set_model(base_url, model_folder_path, model_name)
-        options = FaceDetectorOptions(
-            base_options=BaseOptions(model_asset_path=model_path),
-            running_mode=VisionRunningMode.VIDEO
+        options = mp.tasks.vision.FaceDetectorOptions(
+            base_options=mp.tasks.BaseOptions(model_asset_path=model_path),
+            min_detection_confidence=min_detection_confidence,
+            min_suppression_threshold=min_suppression_threshold,
+            running_mode=mp.tasks.vision.RunningMode.VIDEO
         )
-        self.detector = FaceDetector.create_from_options(options)
+        self.detector = mp.tasks.vision.FaceDetector.create_from_options(options)
 
     def set_model(self, base_url, model_folder_path, model_name):
         model_path = model_folder_path+'/'+model_name
@@ -42,15 +48,13 @@ class MediapipeFaceDetection():
         return model_path
 
     def detect(self, img):
-      self.img = img
-
       # 画像データをmediapipe用に変換する
-      mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=self.img)
+      mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
 
       # オブジェクト検出を実行する
-      self.face_detector_result = self.detector.detect_for_video(mp_image, int(time.time() * 1000))
+      face_detector_result = self.detector.detect_for_video(mp_image, int(time.time() * 1000))
 
-      return self.face_detector_result
+      return face_detector_result
 
     def visualize(self, img, face_detector_result):
         annotated_image = img.copy()
@@ -83,10 +87,7 @@ class MediapipeFaceDetection():
     def release(self):
         self.detector.close()
 
-
-
-
-if __name__=='__main__':
+def main():
     cap = cv2.VideoCapture(0)
     face_detector = MediapipeFaceDetection()
     while cap.isOpened():
@@ -96,6 +97,14 @@ if __name__=='__main__':
             break
 
         face_detector_result = face_detector.detect(frame)
+
+        height, width = frame.shape[:2]
+        if len(face_detector_result.detections) > 0:
+            index = 0 # right eye
+            right_eye_normalized_x = face_detector_result.detections[0].keypoints[index].x
+            right_eye_normalized_y = face_detector_result.detections[0].keypoints[index].y
+            print('right eye:', np.array([int(right_eye_normalized_x * width), int(right_eye_normalized_y*height)]))
+
         annotated_image = face_detector.visualize(frame, face_detector_result)
 
         cv2.imshow('annotated image', annotated_image)
@@ -106,3 +115,6 @@ if __name__=='__main__':
     cv2.destroyAllWindows()
     face_detector.release()
     cap.release()
+
+if __name__=='__main__':
+    main()
