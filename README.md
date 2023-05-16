@@ -95,10 +95,84 @@
 - https://developers.google.com/mediapipe/solutions/vision/face_detector
 
 
-## face_landmarker (not yet)
+## face_landmarker
 - https://developers.google.com/mediapipe/solutions/vision/face_landmarker
+- ***examples of how to reference result data `results`***
+  - normalized x-coordinate the j-th landmark of the i-th face<br>
+    `results.face_landmarks[i][j].x`
+  - x-coordinate the j-th landmark of the i-th face<br>
+    `int(results.face_landmarks[i][j].x * width)`
+- ***data structure of result***
+  - results
+    - face_landmarks (z-cordinate is based on 0-th landmark `wrist`)
+      - 0: (face_id)
+        - 0: (landmark_id)
+          - x
+          - y
+          - z
+          - presence
+          - visibility
+        - 1: (landmark_id)
+          - ...
+      - 1: (face_id)
+        - ...
+    - face_blandshapes
+      - 0: (face_id)
+        - 0: (blendshapes_idx)
+          - index (`0`)
+          - category_name (`_neutral`)
+          - display_name
+          - score
+        - 1: (blendshapes_idx)
+          - ...
+      - 1: (face_id)
+        - ...
+    - facial_transformation_matrixes
+      - 0: (face_id)
+        - 0:
+          - array([0:4])
+        - 1:
+        - 2:
+        - 3:
+      - 1: (face_id)
+        - ...
 
-
-## pose_estimation (not yet)
+## pose_estimation
 - https://developers.google.com/mediapipe/solutions/vision/pose_landmarker
-
+- ***examples of how to reference result data `results`***
+  - normalized x-coordinate the j-th landmark of the i-th pose<br>
+    `results.pose_landmarks[i][j].x`
+  - x-coordinate the j-th landmark of the i-th pose<br>
+    `int(results.pose_landmarks[i][j].x * width)`
+  - segmentation_mask of the i-th pose<br>
+    `results.segmentation_masks[i].numpy_view()`
+- ***data structure of result***
+  - results
+    - pose_landmarks
+      - 0: (pose_id)
+        - 0: (landmark_id)
+          - x
+          - y
+          - z
+          - presence
+          - visibility
+        - 1: (landmark_id)
+          - ...
+      - 1: (pose_id)
+        - ...
+    - segmentation_masks
+      - 0: (pose_id) (mediapipe image)
+      - 1: (pose_id) (mediapipe image)
+        - ...
+    - pose_world_landmarks
+      - 0: (pose_id)
+        - 0: (landmark_id)
+          - x
+          - y
+          - z
+          - presence
+          - visibility
+        - 1: (landmark_id)
+          - ...
+      - 1: (pose_id)
+        - ...
