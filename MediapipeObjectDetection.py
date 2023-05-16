@@ -58,6 +58,9 @@ class MediapipeObjectDetection():
       return self.object_detector_result
 
     def get_bounding_box(self, object_id):
+        if len(self.object_detector_result.detections) == 0:
+            print('no object')
+            return None
         x = self.object_detector_result.detections[object_id].bounding_box.origin_x
         y = self.object_detector_result.detections[object_id].bounding_box.origin_x
         w = self.object_detector_result.detections[object_id].bounding_box.width
@@ -65,10 +68,16 @@ class MediapipeObjectDetection():
         return np.array([x, y, w, h])
 
     def get_category_name(self, object_id) -> str:
+        if len(self.object_detector_result.detections) == 0:
+            print('no object')
+            return None
         category_name = self.object_detector_result.detections[object_id].categories[0].category_name
         return category_name
 
     def get_category_score(self, object_id) -> float:
+        if len(self.object_detector_result.detections) == 0:
+            print('no object')
+            return None
         category_score = self.object_detector_result.detections[object_id].categories[0].score
         return category_score
 
