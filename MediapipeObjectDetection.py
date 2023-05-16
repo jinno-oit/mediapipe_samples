@@ -53,18 +53,33 @@ class MediapipeObjectDetection():
       mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
 
       # オブジェクト検出を実行する
-      face_detector_result = self.detector.detect_for_video(mp_image, int(time.time() * 1000))
+      self.object_detector_result = self.detector.detect_for_video(mp_image, int(time.time() * 1000))
 
-      return face_detector_result
+      return self.object_detector_result
 
-    def visualize(self, img, detection_result):
-        for obj in detection_result.detections:
+    def get_bounding_box(self, object_id):
+        x = self.object_detector_result.detections[object_id].bounding_box.origin_x
+        y = self.object_detector_result.detections[object_id].bounding_box.origin_x
+        w = self.object_detector_result.detections[object_id].bounding_box.width
+        h = self.object_detector_result.detections[object_id].bounding_box.height
+        return np.array([x, y, w, h])
+
+    def get_category_name(self, object_id) -> str:
+        category_name = self.object_detector_result.detections[object_id].categories[0].category_name
+        return category_name
+
+    def get_category_score(self, object_id) -> float:
+        category_score = self.object_detector_result.detections[object_id].categories[0].score
+        return category_score
+
+    def visualize(self, img):
+        for obj in self.object_detector_result.detections:
             # 枠の左上座標，右下座標を算出し，描画する
             upper_left_point = (obj.bounding_box.origin_x, obj.bounding_box.origin_y)
             lower_right_point = (obj.bounding_box.origin_x+obj.bounding_box.width, obj.bounding_box.origin_y+obj.bounding_box.height)
             cv2.rectangle(img, upper_left_point, lower_right_point, self.TEXT_COLOR, thickness=self.FONT_THICKNESS)
             # 枠の左上あたりにカテゴリ名を表示する
-            txt = obj.categories[0].category_name+'('+'{:#.2f}'.format(obj.categories[0].score)+')'
+            txt = obj.categories[0].category_name+'({:#.2f})'.format(obj.categories[0].score)
             lower_left_point_for_text = (obj.bounding_box.origin_x+self.H_MARGIN, obj.bounding_box.origin_y+self.V_MARGIN)
             cv2.putText(img, org=lower_left_point_for_text, text=txt, fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=self.FONT_SIZE, color=self.TEXT_COLOR, thickness=self.FONT_THICKNESS, lineType=cv2.LINE_4)
         return img
@@ -83,15 +98,16 @@ def main():
 
         object_detector_result = object_detector.detect(frame)
 
-        # 初めに検出したオブジェクトの外接矩形の左上の座標を表示する
+        # 初めに検出したオブジェクトのカテゴリ名とスコア，外接矩形の左上のxy座標+横縦サイズを表示する
         if len(object_detector_result.detections) > 0:
-            object0_category_name = object_detector_result.detections[0].categories[0].category_name
-            object0_upper_left_x = object_detector_result.detections[0].bounding_box.origin_x
-            object0_upper_left_y = object_detector_result.detections[0].bounding_box.origin_y
-            object0_upper_left_point = np.array([object0_upper_left_x, object0_upper_left_y])
-            print('upper left x-coordinate of', object0_category_name+':', object0_upper_left_point)
+            index = 0 # object_index
+            print(
+                object_detector.get_category_name(index),
+                '({:#.2f}):'.format(object_detector.get_category_score(index)),
+                object_detector.get_bounding_box(index)
+                )
 
-        annotated_image = object_detector.visualize(frame, object_detector_result)
+        annotated_image = object_detector.visualize(frame)
 
         cv2.imshow('annotated image', annotated_image)
         key = cv2.waitKey(1)&0xFF
