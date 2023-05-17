@@ -54,32 +54,32 @@ class MediapipeObjectDetection():
 
       # オブジェクト検出を実行する
       self.object_detector_result = self.detector.detect_for_video(mp_image, int(time.time() * 1000))
-      self.object_num = len(self.object_detector_result.detections)
+      self.num_objects = len(self.object_detector_result.detections)
 
       return self.object_detector_result
 
-    def get_bounding_box(self, object_id):
-        if self.object_num == 0:
+    def get_bounding_box(self, id_object):
+        if self.num_objects == 0:
             print('no object')
             return None
-        x = self.object_detector_result.detections[object_id].bounding_box.origin_x
-        y = self.object_detector_result.detections[object_id].bounding_box.origin_x
-        w = self.object_detector_result.detections[object_id].bounding_box.width
-        h = self.object_detector_result.detections[object_id].bounding_box.height
+        x = self.object_detector_result.detections[id_object].bounding_box.origin_x
+        y = self.object_detector_result.detections[id_object].bounding_box.origin_x
+        w = self.object_detector_result.detections[id_object].bounding_box.width
+        h = self.object_detector_result.detections[id_object].bounding_box.height
         return np.array([x, y, w, h])
 
-    def get_category_name(self, object_id) -> str:
-        if self.object_num == 0:
+    def get_category_name(self, id_object) -> str:
+        if self.num_objects == 0:
             print('no object')
             return None
-        category_name = self.object_detector_result.detections[object_id].categories[0].category_name
+        category_name = self.object_detector_result.detections[id_object].categories[0].category_name
         return category_name
 
-    def get_category_score(self, object_id) -> float:
-        if self.object_num == 0:
+    def get_category_score(self, id_object) -> float:
+        if self.num_objects == 0:
             print('no object')
             return None
-        category_score = self.object_detector_result.detections[object_id].categories[0].score
+        category_score = self.object_detector_result.detections[id_object].categories[0].score
         return category_score
 
     def visualize(self, img):
@@ -99,25 +99,25 @@ class MediapipeObjectDetection():
 
 def main():
     cap = cv2.VideoCapture(0)
-    object_detector = MediapipeObjectDetection(score_threshold=0.5)
+    Obj = MediapipeObjectDetection(score_threshold=0.5)
     while cap.isOpened():
         ret, frame = cap.read()
         if ret is False:
             print("Ignoring empty camera frame.")
             break
 
-        object_detector_result = object_detector.detect(frame)
+        object_detector_result = Obj.detect(frame)
 
         # 初めに検出したオブジェクトのカテゴリ名とスコア，外接矩形の左上のxy座標+横縦サイズを表示する
-        if object_detector.object_num > 0:
+        if Obj.num_objects > 0:
             index = 0 # object_index
             print(
-                object_detector.get_category_name(index),
-                '({:#.2f}):'.format(object_detector.get_category_score(index)),
-                object_detector.get_bounding_box(index)
+                Obj.get_category_name(index),
+                '({:#.2f}):'.format(Obj.get_category_score(index)),
+                Obj.get_bounding_box(index)
                 )
 
-        annotated_image = object_detector.visualize(frame)
+        annotated_image = Obj.visualize(frame)
 
         cv2.imshow('annotated image', annotated_image)
         key = cv2.waitKey(1)&0xFF
@@ -125,7 +125,7 @@ def main():
             break
 
     cv2.destroyAllWindows()
-    object_detector.release()
+    Obj.release()
     cap.release()
 
 if __name__=='__main__':
