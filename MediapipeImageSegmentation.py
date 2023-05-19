@@ -12,13 +12,6 @@ class MediapipeImageSegmentation():
     model_name = 'selfie_multiclass_256x256.tflite'
     model_folder_path = './models'
 
-    H_MARGIN = 10  # pixels
-    V_MARGIN = 30  # pixels
-    ROW_SIZE = 10  # pixels
-    FONT_SIZE = 1
-    FONT_THICKNESS = 1
-    TEXT_COLOR = (0, 255, 0)  # green
-
     def __init__(
             self,
             model_folder_path=model_folder_path,
@@ -54,7 +47,7 @@ class MediapipeImageSegmentation():
         # 画像データをmediapipe用に変換する
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
 
-        # オブジェクト検出を実行する
+        # 画像分割を実行する
         self.image_segmenter_result = self.segmenter.segment_for_video(mp_image, int(time.time() * 1000))
 
         return self.image_segmenter_result
