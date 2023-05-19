@@ -18,6 +18,28 @@ class MediapipeHandLandmarker():
     RIGHT_HAND_COLOR = (0, 255, 0)
     LEFT_HAND_COLOR = (100, 100, 255)
 
+    WRIST = 0
+    THUMB_CMC = 1
+    THUMB_MCP = 2
+    THUMB_IP = 3
+    THUMB_TIP = 4
+    INDEX_FINGER_MCP = 5
+    INDEX_FINGER_PIP = 6
+    INDEX_FINGER_DIP = 7
+    INDEX_FINGER_TIP = 8
+    MIDDLE_FINGER_MCP = 9
+    MIDDLE_FINGER_PIP = 10
+    MIDDLE_FINGER_DIP = 11
+    MIDDLE_FINGER_TIP = 12
+    RING_FINGER_MCP = 13
+    RING_FINGER_PIP = 14
+    RING_FINGER_DIP = 15
+    RING_FINGER_TIP = 16
+    PINKY_FINGER_MCP = 17
+    PINKY_FINGER_PIP = 18
+    PINKY_FINGER_DIP = 19
+    PINKY_FINGER_TIP = 20
+
     # https://developers.google.com/mediapipe/solutions/vision/hand_landmarker#get_started
     def __init__(
             self,
@@ -134,11 +156,12 @@ def main():
 
         hand_landmarker_result = Hand.detect(flipped_frame)
 
-        # 初めに検出したポーズの左手首の座標を表示する
         if Hand.num_detected_hands > 0:
             index_hand = 0 #
-            index_landmark = 0 #
+            index_landmark = Hand.WRIST #
             print(
+                Hand.get_handedness(index_hand),
+                'score:{:#.2f}'.format(Hand.get_score_handedness(index_hand)),
                 Hand.get_normalized_landmark(index_hand, index_landmark),
                 Hand.get_landmark(index_hand, index_landmark)
                 )

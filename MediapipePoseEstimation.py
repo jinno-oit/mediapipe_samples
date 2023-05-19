@@ -14,12 +14,44 @@ class MediapipePoseEstimation():
     # model_name = 'pose_landmarker_lite.task'
     model_folder_path = './models'
 
-    # H_MARGIN = 10  # pixels
-    # V_MARGIN = 30  # pixels
-    # ROW_SIZE = 10  # pixels
-    # FONT_SIZE = 1
-    # FONT_THICKNESS = 1
-    # TEXT_COLOR = (0, 255, 0)  # green
+    RADIUS_SIZE = 3  # pixels
+    FONT_SIZE = 1
+    FONT_THICKNESS = -1
+    FONT_COLOR = (0, 255, 0)
+
+    NOSE = 0
+    LEFT_EYE_INNER = 1
+    LEFT_EYE = 2
+    LEFT_EYE_OUTER = 3
+    RIGHT_EYE_INNER = 4
+    RIGHT_EYE = 5
+    RIGHT_EYE_OUTER = 6
+    LEFT_EAR = 7
+    RIGHT_EAR = 8
+    MOUTH_LEFT = 9
+    MOUTH_RIGHT = 10
+    LEFT_SHOULDER = 11
+    RIGHT_SHOULDER = 12
+    LEFT_ELBOW = 13
+    RIGHT_ELBOW = 14
+    LEFT_WRIST = 15
+    RIGHT_WRIST = 16
+    LEFT_PINKY = 17
+    RIGHT_PINKY = 18
+    LEFT_INDEX = 19
+    RIGHT_INDEX = 20
+    LEFT_THUMB = 21
+    RIGHT_THUMB = 22
+    LEFT_HIP = 23
+    RIGHT_HIP = 24
+    LEFT_KNEE = 25
+    RIGHT_KNEE = 26
+    LEFT_ANKLE = 27
+    RIGHT_ANKLE = 28
+    LEFT_HEEL = 29
+    RIGHT_HEEL = 30
+    LEFT_FOOT_INDEX = 31
+    RIGHT_FOOT_INDEX = 32
 
     def __init__(
             self,
@@ -67,7 +99,7 @@ class MediapipePoseEstimation():
 
       return self.pose_landmarker_result
 
-    def get_normalized_pose_landmark(self, id_pose, id_landmark):
+    def get_normalized_landmark(self, id_pose, id_landmark):
         if self.num_detected_poses == 0:
             print('no pose')
             return None
@@ -77,7 +109,7 @@ class MediapipePoseEstimation():
         z = self.pose_landmarker_result.pose_landmarks[id_pose][id_landmark].z
         return np.array([x, y, z])
 
-    def get_pose_landmark(self, id_pose, id_landmark):
+    def get_landmark(self, id_pose, id_landmark):
         if self.num_detected_poses == 0:
             print('no pose')
             return None
@@ -86,6 +118,12 @@ class MediapipePoseEstimation():
         y = self.pose_landmarker_result.pose_landmarks[id_pose][id_landmark].y
         z = self.pose_landmarker_result.pose_landmarks[id_pose][id_landmark].z
         return np.array([int(x*width), int(y*height), int(z*width)])
+
+    def get_landmark_visibility(self, id_pose, id_landmark):
+        return self.pose_landmarker_result.pose_landmarks[id_pose][id_landmark].visibility
+
+    def get_landmark_presence(self, id_pose, id_landmark):
+        return self.pose_landmarker_result.pose_landmarks[id_pose][id_landmark].visibility
 
     def get_segmentation_mask(self, id_pose):
         if self.num_detected_poses == 0:
@@ -111,8 +149,16 @@ class MediapipePoseEstimation():
         return (img * visualized_mask).astype(np.uint8)
 
     def visualize(self, img):
-        pose_landmarks_list = self.pose_landmarker_result.pose_landmarks
         annotated_image = np.copy(img)
+        for i, pose in enumerate(self.pose_landmarker_result.pose_landmarks):
+            for j in range(len(pose)):
+                point = self.get_landmark(i, j)
+                cv2.circle(annotated_image, tuple(point[:2]), self.RADIUS_SIZE, self.FONT_COLOR, thickness=self.FONT_THICKNESS)
+        return annotated_image
+
+    def visualize_with_mp(self, rgb_image):
+        pose_landmarks_list = self.pose_landmarker_result.pose_landmarks
+        annotated_image = np.copy(rgb_image)
 
         # Loop through the detected poses to visualize.
         for idx in range(len(pose_landmarks_list)):
@@ -145,13 +191,14 @@ def main():
 
         pose_landmarker_result = Pose.detect(frame)
 
-        # 初めに検出したポーズの左手首の座標を表示する
         if Pose.num_detected_poses > 0:
             index_pose = 0 #
-            index_landmark = 15 # landmark
+            index_landmark = Pose.LEFT_WRIST # landmark
             print(
-                Pose.get_normalized_pose_landmark(index_pose, index_landmark),
-                Pose.get_pose_landmark(index_pose, index_landmark)
+                'visibility:{:#.2f}'.format(Pose.get_landmark_visibility(index_pose, index_landmark)),
+                'presence:{:#.2f}'.format(Pose.get_landmark_presence(index_pose, index_landmark)),
+                Pose.get_normalized_landmark(index_pose, index_landmark),
+                Pose.get_landmark(index_pose, index_landmark)
                 )
 
         masks = Pose.get_all_segmentation_masks()

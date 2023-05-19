@@ -16,23 +16,12 @@ def visualize_face(img, face_landmarker_result):
   for face in face_landmarker_result.face_landmarks:
     for point in face:
       cv2.circle(img, (int(point.x*w), int(point.y*h)), 1, color, thickness=2)
-
-#   for hand, info in zip(face_landmarker_result.hand_landmarks, face_landmarker_result.handedness):
-#     if info[0].category_name == 'Right':
-#       color = RIGHT_HAND_COLOR
-#     else:
-#       color = LEFT_HAND_COLOR
-#     for point in hand:
-#       cv2.circle(img, (int(point.x*w), int(point.y*h)), 5, color, thickness=2)
-#     txt = info[0].category_name+'('+'{:#.2f}'.format(info[0].score)+')'
-#     wrist_point_for_text = (int(hand[0].x*w)+MARGIN_X, int(hand[0].y*h)+MARGIN_Y)
-#     cv2.putText(img, org=wrist_point_for_text, text=txt, fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.0, color=color, thickness=1, lineType=cv2.LINE_4)
   return img
 
 def main():
   base_url = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/'
-  model_folder_path = './models'
   model_name = 'face_landmarker.task'
+  model_folder_path = './models'
   model_path = dl.set_model(base_url, model_folder_path, model_name)
 
   # 初期設定（名前が長いのでリネームしている）
