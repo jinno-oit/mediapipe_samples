@@ -53,37 +53,37 @@ class MediapipeObjectDetection():
       mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
 
       # オブジェクト検出を実行する
-      self.object_detector_result = self.detector.detect_for_video(mp_image, int(time.time() * 1000))
-      self.num_detected_objects = len(self.object_detector_result.detections)
+      self.results = self.detector.detect_for_video(mp_image, int(time.time() * 1000))
+      self.num_detected_objects = len(self.results.detections)
 
-      return self.object_detector_result
+      return self.results
 
     def get_bounding_box(self, id_object):
         if self.num_detected_objects == 0:
             print('no object')
             return None
-        x = self.object_detector_result.detections[id_object].bounding_box.origin_x
-        y = self.object_detector_result.detections[id_object].bounding_box.origin_x
-        w = self.object_detector_result.detections[id_object].bounding_box.width
-        h = self.object_detector_result.detections[id_object].bounding_box.height
+        x = self.results.detections[id_object].bounding_box.origin_x
+        y = self.results.detections[id_object].bounding_box.origin_x
+        w = self.results.detections[id_object].bounding_box.width
+        h = self.results.detections[id_object].bounding_box.height
         return np.array([x, y, w, h])
 
     def get_category_name(self, id_object) -> str:
         if self.num_detected_objects == 0:
             print('no object')
             return None
-        category_name = self.object_detector_result.detections[id_object].categories[0].category_name
+        category_name = self.results.detections[id_object].categories[0].category_name
         return category_name
 
     def get_category_score(self, id_object) -> float:
         if self.num_detected_objects == 0:
             print('no object')
             return None
-        category_score = self.object_detector_result.detections[id_object].categories[0].score
+        category_score = self.results.detections[id_object].categories[0].score
         return category_score
 
     def visualize(self, img):
-        for obj in self.object_detector_result.detections:
+        for obj in self.results.detections:
             # 枠の左上座標，右下座標を算出し，描画する
             upper_left_point = (obj.bounding_box.origin_x, obj.bounding_box.origin_y)
             lower_right_point = (obj.bounding_box.origin_x+obj.bounding_box.width, obj.bounding_box.origin_y+obj.bounding_box.height)
@@ -106,7 +106,7 @@ def main():
             print("Ignoring empty camera frame.")
             break
 
-        object_detector_result = Obj.detect(frame)
+        results = Obj.detect(frame)
 
         # 初めに検出したオブジェクトのカテゴリ名とスコア，外接矩形の左上のxy座標+横縦サイズを表示する
         if Obj.num_detected_objects > 0:

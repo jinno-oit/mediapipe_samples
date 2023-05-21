@@ -52,15 +52,16 @@ class MediapipeFaceDetection():
       mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
 
       # オブジェクト検出を実行する
-      face_detector_result = self.detector.detect_for_video(mp_image, int(time.time() * 1000))
+      self.results = self.detector.detect_for_video(mp_image, int(time.time() * 1000))
+      self.num_detected_faces = len(self.results.detections)
 
-      return face_detector_result
+      return self.results
 
-    def visualize(self, img, face_detector_result):
+    def visualize(self, img):
         annotated_image = img.copy()
         height, width, _ = img.shape
 
-        for detection in face_detector_result.detections:
+        for detection in self.results.detections:
             # Draw bounding_box
             bbox = detection.bounding_box
             start_point = bbox.origin_x, bbox.origin_y
@@ -89,23 +90,23 @@ class MediapipeFaceDetection():
 
 def main():
     cap = cv2.VideoCapture(0)
-    face_detector = MediapipeFaceDetection()
+    FaceDet = MediapipeFaceDetection()
     while cap.isOpened():
         ret, frame = cap.read()
         if ret is False:
             print("Ignoring empty camera frame.")
             break
 
-        face_detector_result = face_detector.detect(frame)
+        results = FaceDet.detect(frame)
 
         height, width = frame.shape[:2]
-        if len(face_detector_result.detections) > 0:
+        if FaceDet.num_detected_faces > 0:
             index = 0 # right eye
-            right_eye_normalized_x = face_detector_result.detections[0].keypoints[index].x
-            right_eye_normalized_y = face_detector_result.detections[0].keypoints[index].y
+            right_eye_normalized_x = results.detections[0].keypoints[index].x
+            right_eye_normalized_y = results.detections[0].keypoints[index].y
             print('right eye:', np.array([int(right_eye_normalized_x * width), int(right_eye_normalized_y*height)]))
 
-        annotated_image = face_detector.visualize(frame, face_detector_result)
+        annotated_image = FaceDet.visualize(frame)
 
         cv2.imshow('annotated image', annotated_image)
         key = cv2.waitKey(1)&0xFF
@@ -113,7 +114,7 @@ def main():
             break
 
     cv2.destroyAllWindows()
-    face_detector.release()
+    FaceDet.release()
     cap.release()
 
 if __name__=='__main__':

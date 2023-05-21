@@ -94,19 +94,19 @@ class MediapipePoseEstimation():
       mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
 
       # ポーズ検出を実行する
-      self.pose_landmarker_result = self.detector.detect_for_video(mp_image, int(time.time() * 1000))
-      self.num_detected_poses = len(self.pose_landmarker_result.pose_landmarks)
+      self.results = self.detector.detect_for_video(mp_image, int(time.time() * 1000))
+      self.num_detected_poses = len(self.results.pose_landmarks)
 
-      return self.pose_landmarker_result
+      return self.results
 
     def get_normalized_landmark(self, id_pose, id_landmark):
         if self.num_detected_poses == 0:
             print('no pose')
             return None
         height, width = self.size[:2]
-        x = self.pose_landmarker_result.pose_landmarks[id_pose][id_landmark].x
-        y = self.pose_landmarker_result.pose_landmarks[id_pose][id_landmark].y
-        z = self.pose_landmarker_result.pose_landmarks[id_pose][id_landmark].z
+        x = self.results.pose_landmarks[id_pose][id_landmark].x
+        y = self.results.pose_landmarks[id_pose][id_landmark].y
+        z = self.results.pose_landmarks[id_pose][id_landmark].z
         return np.array([x, y, z])
 
     def get_landmark(self, id_pose, id_landmark):
@@ -114,34 +114,34 @@ class MediapipePoseEstimation():
             print('no pose')
             return None
         height, width = self.size[:2]
-        x = self.pose_landmarker_result.pose_landmarks[id_pose][id_landmark].x
-        y = self.pose_landmarker_result.pose_landmarks[id_pose][id_landmark].y
-        z = self.pose_landmarker_result.pose_landmarks[id_pose][id_landmark].z
+        x = self.results.pose_landmarks[id_pose][id_landmark].x
+        y = self.results.pose_landmarks[id_pose][id_landmark].y
+        z = self.results.pose_landmarks[id_pose][id_landmark].z
         return np.array([int(x*width), int(y*height), int(z*width)])
 
     def get_landmark_visibility(self, id_pose, id_landmark):
-        return self.pose_landmarker_result.pose_landmarks[id_pose][id_landmark].visibility
+        return self.results.pose_landmarks[id_pose][id_landmark].visibility
 
     def get_landmark_presence(self, id_pose, id_landmark):
-        return self.pose_landmarker_result.pose_landmarks[id_pose][id_landmark].visibility
+        return self.results.pose_landmarks[id_pose][id_landmark].visibility
 
     def get_segmentation_mask(self, id_pose):
         if self.num_detected_poses == 0:
             print('no pose')
             return None
-        return self.pose_landmarker_result.segmentation_masks[id_pose].numpy_view()
+        return self.results.segmentation_masks[id_pose].numpy_view()
 
     def get_all_segmentation_masks(self):
         if self.num_detected_poses == 0:
             print('no pose')
             return None
-        all_segmentation_masks = np.zeros_like(self.pose_landmarker_result.segmentation_masks[0], dtype=float)
-        for mask in self.pose_landmarker_result.segmentation_masks:
+        all_segmentation_masks = np.zeros_like(self.results.segmentation_masks[0], dtype=float)
+        for mask in self.results.segmentation_masks:
             all_segmentation_masks = np.maximum(all_segmentation_masks, mask.numpy_view().astype(float))
         return (255*all_segmentation_masks).astype(np.uint8)
 
     def visualize_mask(self, img, mask):
-        if self.pose_landmarker_result.segmentation_masks == None:
+        if self.results.segmentation_masks == None:
             print('no mask')
             return img
         segmentation_mask = mask.astype(float)/np.max(mask)
@@ -150,14 +150,14 @@ class MediapipePoseEstimation():
 
     def visualize(self, img):
         annotated_image = np.copy(img)
-        for i, pose in enumerate(self.pose_landmarker_result.pose_landmarks):
+        for i, pose in enumerate(self.results.pose_landmarks):
             for j in range(len(pose)):
                 point = self.get_landmark(i, j)
                 cv2.circle(annotated_image, tuple(point[:2]), self.RADIUS_SIZE, self.FONT_COLOR, thickness=self.FONT_THICKNESS)
         return annotated_image
 
     def visualize_with_mp(self, rgb_image):
-        pose_landmarks_list = self.pose_landmarker_result.pose_landmarks
+        pose_landmarks_list = self.results.pose_landmarks
         annotated_image = np.copy(rgb_image)
 
         # Loop through the detected poses to visualize.
@@ -189,7 +189,7 @@ def main():
             print("Ignoring empty camera frame.")
             break
 
-        pose_landmarker_result = Pose.detect(frame)
+        results = Pose.detect(frame)
 
         if Pose.num_detected_poses > 0:
             index_pose = 0 #

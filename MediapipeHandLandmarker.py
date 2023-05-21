@@ -82,18 +82,18 @@ class MediapipeHandLandmarker():
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
 
         # ハンド検出を実行する
-        self.hand_landmarker_result = self.detector.detect_for_video(mp_image, int(time.time() * 1000))
-        self.num_detected_hands = len(self.hand_landmarker_result.hand_landmarks)
+        self.results = self.detector.detect_for_video(mp_image, int(time.time() * 1000))
+        self.num_detected_hands = len(self.results.hand_landmarks)
 
-        return self.hand_landmarker_result
+        return self.results
 
     def get_normalized_landmark(self, id_hand, id_landmark):
         if self.num_detected_hands == 0:
             print('no hand')
             return None
-        x = self.hand_landmarker_result.hand_landmarks[id_hand][id_landmark].x
-        y = self.hand_landmarker_result.hand_landmarks[id_hand][id_landmark].y
-        z = self.hand_landmarker_result.hand_landmarks[id_hand][id_landmark].z
+        x = self.results.hand_landmarks[id_hand][id_landmark].x
+        y = self.results.hand_landmarks[id_hand][id_landmark].y
+        z = self.results.hand_landmarks[id_hand][id_landmark].z
         return np.array([x, y, z])
 
     def get_landmark(self, id_hand, id_landmark):
@@ -101,27 +101,27 @@ class MediapipeHandLandmarker():
             print('no hand')
             return None
         height, width = self.size[:2]
-        x = self.hand_landmarker_result.hand_landmarks[id_hand][id_landmark].x
-        y = self.hand_landmarker_result.hand_landmarks[id_hand][id_landmark].y
-        z = self.hand_landmarker_result.hand_landmarks[id_hand][id_landmark].z
+        x = self.results.hand_landmarks[id_hand][id_landmark].x
+        y = self.results.hand_landmarks[id_hand][id_landmark].y
+        z = self.results.hand_landmarks[id_hand][id_landmark].z
         return np.array([int(x*width), int(y*height), int(z*width)])
 
     def get_handedness(self, id_hand):
         if self.num_detected_hands == 0:
             print('no hand')
             return None
-        return self.hand_landmarker_result.handedness[id_hand][0].category_name
+        return self.results.handedness[id_hand][0].category_name
 
     def get_score_handedness(self, id_hand):
         if self.num_detected_hands == 0:
             print('no hand')
             return None
-        return self.hand_landmarker_result.handedness[id_hand][0].score
+        return self.results.handedness[id_hand][0].score
 
     def visualize(self, img):
         annotated_image = np.copy(img)
-        # for hand, info in zip(self.hand_landmarker_result.hand_landmarks, self.hand_landmarker_result.handedness):
-        for i, hand in enumerate(self.hand_landmarker_result.hand_landmarks):
+        # for hand, info in zip(self.results.hand_landmarks, self.results.handedness):
+        for i, hand in enumerate(self.results.hand_landmarks):
             handedness = self.get_handedness(i)
             score = self.get_score_handedness(i)
             wrist_point = self.get_landmark(i, 0)
@@ -154,7 +154,7 @@ def main():
 
         flipped_frame = cv2.flip(frame, 1)
 
-        hand_landmarker_result = Hand.detect(flipped_frame)
+        results = Hand.detect(flipped_frame)
 
         if Hand.num_detected_hands > 0:
             index_hand = 0 #

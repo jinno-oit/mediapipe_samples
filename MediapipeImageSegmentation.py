@@ -48,15 +48,15 @@ class MediapipeImageSegmentation():
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
 
         # 画像分割を実行する
-        self.image_segmenter_result = self.segmenter.segment_for_video(mp_image, int(time.time() * 1000))
+        self.results = self.segmenter.segment_for_video(mp_image, int(time.time() * 1000))
 
-        return self.image_segmenter_result
+        return self.results
 
     def get_segmentation_mask(self):
-        return self.image_segmenter_result.category_mask.numpy_view()
+        return self.results.category_mask.numpy_view()
 
     def get_normalized_mask(self):
-        mask = self.image_segmenter_result.category_mask.numpy_view()
+        mask = self.results.category_mask.numpy_view()
         return (255.0*mask/np.max(mask)).astype(np.uint8)
     def release(self):
         self.segmenter.close()
