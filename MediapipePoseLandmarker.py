@@ -2,13 +2,17 @@ import os
 import urllib.request
 import time
 import numpy as np
+# https://github.com/opencv/opencv/issues/17687
+os.environ["OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS"] = "0"
 import cv2
 import mediapipe as mp
 from mediapipe import solutions
 from mediapipe.framework.formats import landmark_pb2
 
-class MediapipePoseEstimation():
-    base_url = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/'
+# https://developers.google.com/mediapipe/solutions/vision/pose_landmarker#get_started
+class MediapipePoseLandmarker():
+    # https://storage.googleapis.com/mediapipe-models/
+    base_url = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/'
     model_name = 'pose_landmarker_heavy.task'
     # base_url = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/latest/'
     # model_name = 'pose_landmarker_lite.task'
@@ -182,7 +186,7 @@ class MediapipePoseEstimation():
 
 def main():
     cap = cv2.VideoCapture(0)
-    Pose = MediapipePoseEstimation()
+    Pose = MediapipePoseLandmarker()
     while cap.isOpened():
         ret, frame = cap.read()
         if ret is False:
@@ -204,6 +208,7 @@ def main():
         masks = Pose.get_all_segmentation_masks()
         mask_image = Pose.visualize_mask(frame, masks)
         annotated_image = Pose.visualize(mask_image)
+        # annotated_image = Pose.visualize_with_mp(mask_image)
 
         cv2.imshow('annotated image', annotated_image)
         key = cv2.waitKey(1)&0xFF

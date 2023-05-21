@@ -1,6 +1,88 @@
 # mediapipe_samples
-- <mediapipe 0.9.3.0> 
+- <mediapipe 0.10.0.0>
 - [MediaPipe Examples](https://developers.google.com/mediapipe/solutions/examples)
+
+
+
+## MediapipeObjectDetection
+### class variable
+- model information
+  - `base_url`, `model_name`, `model_folder_path`
+- visualize params
+### instance variable
+- number of detected objects: `num_detected_objects`
+- (mediapipe detector: `detector`)
+- (mediapipe detector's results: 'results')
+### method
+- `__init__( arguments are optional )`: constructor
+  - arguments
+    - `model_folder_path`: If you want to change the model folder path
+    - `base_url`: If you want to change the model
+    - `model_name`: If you want to change the model
+    - `max_results`: Sets the optional maximum number of top-scored detection results to return.
+      - Value Range: Any positive numbers
+      - Default Value: -1 (all results are returned)
+    - `score_threshold`: Sets the prediction score threshold that overrides the one provided in the model metadata (if any). Results below this value are rejected.
+      - Value Range: Any float [0.0, 1.0]
+      - Default Value: 0.0 (all results are detected)
+- `detect( image )`
+  - arguments
+    - `image`: Input image (readed by cv2)
+  - return values
+    - `results`: Probably not necessary
+- `get_bounding_box( id_object )`
+  - arguments
+    - `id_object`: Number of the object you want to get bounding box
+  - return values
+    - `np.array([x, y, w, h])`: array of the bounding box information
+      - `x`: x-coordinate, `y`: y-coordinate, `w`: width, `h`: height
+- `category_name = get_category_name( id_object )`
+- `category_score = get_category_score( id_object )`
+- `annotated_image = visualize( image )`
+  - `annotated_image`: Image with bounding boxes and category names of all detected objects drawn on the input image
+- `release()`: Close mediapipe's `detector`
+### how to use
+```python
+import os
+os.environ["OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS"] = "0"
+import cv2
+from MediapipeObjectDetection import MediapipeObjectDetection as ObjDetection
+
+cap = cv2.VideoCapture(0)
+Obj = ObjDetection()
+while cap.isOpened():
+    ret, frame = cap.read()
+    Obj.detect(frame)
+    annotated_frame = Obj.visualize(frame)
+    cv2.imshow('annotated frame', annotated_frame)
+    key = cv2.waitKey(1)&0xFF
+    if key == ord('q'):
+        break
+cv2.destroyAllWindows()
+Obj.release()
+cap.release()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## object_detection
 - https://developers.google.com/mediapipe/solutions/vision/object_detector

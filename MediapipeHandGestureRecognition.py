@@ -2,11 +2,15 @@ import os
 import urllib.request
 import time
 import numpy as np
+# https://github.com/opencv/opencv/issues/17687
+os.environ["OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS"] = "0"
 import cv2
 import mediapipe as mp
 from MediapipeHandLandmarker import MediapipeHandLandmarker
 
+# https://developers.google.com/mediapipe/solutions/vision/gesture_recognizer#get_started
 class MediapipeHandGestureRecognition(MediapipeHandLandmarker):
+    # https://storage.googleapis.com/mediapipe-models/
     base_url = 'https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/latest/'
     model_name = 'gesture_recognizer.task'
     model_folder_path = './models'
@@ -40,13 +44,9 @@ class MediapipeHandGestureRecognition(MediapipeHandLandmarker):
 
     def detect(self, img):
         self.size = img.shape
-        # 画像データをmediapipe用に変換する
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
-
-        # ハンド検出を実行する
         self.results = self.recognizer.recognize_for_video(mp_image, int(time.time() * 1000))
         self.num_detected_hands = len(self.results.hand_landmarks)
-
         return self.results
 
     def get_gesture(self, id_hand):
@@ -76,6 +76,7 @@ def main():
 
         flipped_frame = cv2.flip(frame, 1)
 
+        # HandGestureRecognition requires horizontal flip for input image
         results = GestRecog.detect(flipped_frame)
 
         if GestRecog.num_detected_hands > 0:

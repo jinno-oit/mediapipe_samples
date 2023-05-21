@@ -2,10 +2,16 @@ import os
 import urllib.request
 import time
 import numpy as np
+# https://github.com/opencv/opencv/issues/17687
+os.environ["OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS"] = "0"
 import cv2
 import mediapipe as mp
+from mediapipe import solutions
+from mediapipe.framework.formats import landmark_pb2
 
+# https://developers.google.com/mediapipe/solutions/vision/hand_landmarker#get_started
 class MediapipeHandLandmarker():
+    # https://storage.googleapis.com/mediapipe-models/
     base_url = 'https://storage.googleapis.com/mediapipe-tasks/hand_landmarker/'
     model_name = 'hand_landmarker.task'
     model_folder_path = './models'
@@ -17,6 +23,7 @@ class MediapipeHandLandmarker():
     FONT_THICKNESS = 1
     RIGHT_HAND_COLOR = (0, 255, 0)
     LEFT_HAND_COLOR = (100, 100, 255)
+    HANDEDNESS_TEXT_COLOR = (88, 205, 54) # vibrant green
 
     WRIST = 0
     THUMB_CMC = 1
@@ -65,12 +72,12 @@ class MediapipeHandLandmarker():
 
     def set_model(self, base_url, model_folder_path, model_name):
         model_path = model_folder_path+'/'+model_name
-        # modelファイルが存在しない場合，ダウンロードしてくる
+        # download model if model file does not exist
         if not os.path.exists(model_path):
-            # model_folderが存在しない場合，フォルダを作成する
+            # make directory if model_folder directory does not exist
             if not os.path.exists(model_folder_path):
                 os.mkdir(model_folder_path)
-            # モデルをダウンロードする
+            # download model file
             url = base_url+model_name
             save_name = model_path
             urllib.request.urlretrieve(url, save_name)
@@ -78,13 +85,9 @@ class MediapipeHandLandmarker():
 
     def detect(self, img):
         self.size = img.shape
-        # 画像データをmediapipe用に変換する
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img)
-
-        # ハンド検出を実行する
         self.results = self.detector.detect_for_video(mp_image, int(time.time() * 1000))
         self.num_detected_hands = len(self.results.hand_landmarks)
-
         return self.results
 
     def get_normalized_landmark(self, id_hand, id_landmark):
@@ -118,8 +121,8 @@ class MediapipeHandLandmarker():
             return None
         return self.results.handedness[id_hand][0].score
 
-    def visualize(self, img):
-        annotated_image = np.copy(img)
+    def visualize(self, image):
+        annotated_image = np.copy(image)
         # for hand, info in zip(self.results.hand_landmarks, self.results.handedness):
         for i, hand in enumerate(self.results.hand_landmarks):
             handedness = self.get_handedness(i)
@@ -139,6 +142,36 @@ class MediapipeHandLandmarker():
                 cv2.putText(annotated_image, org=wrist_point_for_text, text=txt, fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=self.FONT_SIZE, color=color, thickness=self.FONT_THICKNESS, lineType=cv2.LINE_4)
         return annotated_image
 
+    def visualize_with_mp(self, image):
+        hand_landmarks_list = self.results.hand_landmarks
+        handedness_list = self.results.handedness
+        annotated_image = np.copy(image)
+        # Loop through the detected hands to visualize.
+        for idx in range(len(hand_landmarks_list)):
+            hand_landmarks = hand_landmarks_list[idx]
+            handedness = handedness_list[idx]
+            # Draw the hand landmarks.
+            hand_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
+            hand_landmarks_proto.landmark.extend([
+            landmark_pb2.NormalizedLandmark(x=landmark.x, y=landmark.y, z=landmark.z) for landmark in hand_landmarks])
+            solutions.drawing_utils.draw_landmarks(
+            annotated_image,
+            hand_landmarks_proto,
+            solutions.hands.HAND_CONNECTIONS,
+            solutions.drawing_styles.get_default_hand_landmarks_style(),
+            solutions.drawing_styles.get_default_hand_connections_style())
+            # Get the top left corner of the detected hand's bounding box.
+            height, width, _ = annotated_image.shape
+            x_coordinates = [landmark.x for landmark in hand_landmarks]
+            y_coordinates = [landmark.y for landmark in hand_landmarks]
+            text_x = int(min(x_coordinates) * width)
+            text_y = int(min(y_coordinates) * height) - self.V_MARGIN
+            # Draw handedness (left or right hand) on the image.
+            cv2.putText(annotated_image, f"{handedness[0].category_name}",
+                        (text_x, text_y), cv2.FONT_HERSHEY_DUPLEX,
+                        self.FONT_SIZE, self.HANDEDNESS_TEXT_COLOR, self.FONT_THICKNESS, cv2.LINE_AA)
+        return annotated_image
+
     def release(self):
         self.detector.close()
 
@@ -152,6 +185,7 @@ def main():
             print("Ignoring empty camera frame.")
             break
 
+        # HandLandmarker requires horizontal flip for input image
         flipped_frame = cv2.flip(frame, 1)
 
         results = Hand.detect(flipped_frame)
@@ -162,11 +196,13 @@ def main():
             print(
                 Hand.get_handedness(index_hand),
                 'score:{:#.2f}'.format(Hand.get_score_handedness(index_hand)),
+                'Wrist:',
                 Hand.get_normalized_landmark(index_hand, index_landmark),
                 Hand.get_landmark(index_hand, index_landmark)
                 )
 
         annotated_image = Hand.visualize(flipped_frame)
+        # annotated_image = Hand.visualize_with_mp(flipped_frame)
 
         cv2.imshow('annotated image', annotated_image)
         key = cv2.waitKey(1)&0xFF
