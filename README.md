@@ -3,7 +3,7 @@
 - [MediaPipe Examples](https://developers.google.com/mediapipe/solutions/examples)
 
 
-
+----
 ## MediapipeObjectDetection
 ### class variable
 - model information
@@ -64,11 +64,11 @@ Obj.release()
 cap.release()
 ```
 - other sample
-  - You can see it in the main function in MediapipeObjectDetection.py
+  - You can see it in the main function of MediapipeObjectDetection.py
 
 
 
-
+----
 
 
 
