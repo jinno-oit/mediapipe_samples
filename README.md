@@ -42,6 +42,7 @@
   - `annotated_image`: Image with bounding boxes and category names of all detected objects drawn on the input image
 - `release()`: Close mediapipe's `detector`
 ### how to use
+- simple sample
 ```python
 import os
 os.environ["OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS"] = "0"
@@ -62,7 +63,8 @@ cv2.destroyAllWindows()
 Obj.release()
 cap.release()
 ```
-
+- other sample
+  - You can see it in the main function in MediapipeObjectDetection.py
 
 
 
