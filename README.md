@@ -12,7 +12,7 @@
 ### instance variable
 - number of detected objects: `num_detected_objects`
 - (mediapipe detector: `detector`)
-- (mediapipe detector's results: 'results')
+- (mediapipe detector's results: `results`)
 ### method
 - `__init__( arguments are optional )`: constructor
   - arguments
@@ -21,10 +21,10 @@
     - `model_name`: If you want to change the model
     - `max_results`: Sets the optional maximum number of top-scored detection results to return.
       - Value Range: Any positive numbers
-      - Default Value: -1 (all results are returned)
+      - Default Value: `-1` (all results are returned)
     - `score_threshold`: Sets the prediction score threshold that overrides the one provided in the model metadata (if any). Results below this value are rejected.
-      - Value Range: Any float [0.0, 1.0]
-      - Default Value: 0.0 (all results are detected)
+      - Value Range: Any float `[0.0, 1.0]`
+      - Default Value: `0.0` (all results are detected)
 - `detect( image )`
   - arguments
     - `image`: Input image (readed by cv2)
@@ -50,10 +50,11 @@ import cv2
 from MediapipeObjectDetection import MediapipeObjectDetection as ObjDetection
 
 cap = cv2.VideoCapture(0)
-Obj = ObjDetection()
+Obj = ObjDetection(score_threshold=0.5)
 while cap.isOpened():
     ret, frame = cap.read()
     Obj.detect(frame)
+    print(Obj.num_detected_objects)
     annotated_frame = Obj.visualize(frame)
     cv2.imshow('annotated frame', annotated_frame)
     key = cv2.waitKey(1)&0xFF
