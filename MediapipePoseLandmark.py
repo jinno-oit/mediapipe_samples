@@ -10,7 +10,7 @@ from mediapipe import solutions
 from mediapipe.framework.formats import landmark_pb2
 
 # https://developers.google.com/mediapipe/solutions/vision/pose_landmarker#get_started
-class MediapipePoseLandmarker():
+class MediapipePoseLandmark():
     # https://storage.googleapis.com/mediapipe-models/
     base_url = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/'
     model_name = 'pose_landmarker_heavy.task'
@@ -18,11 +18,13 @@ class MediapipePoseLandmarker():
     # model_name = 'pose_landmarker_lite.task'
     model_folder_path = './models'
 
+    # visualize params
     RADIUS_SIZE = 3  # pixels
     FONT_SIZE = 1
     FONT_THICKNESS = -1
     FONT_COLOR = (0, 255, 0)
 
+    # pose landmark id
     NOSE = 0
     LEFT_EYE_INNER = 1
     LEFT_EYE = 2
@@ -63,6 +65,7 @@ class MediapipePoseLandmarker():
             base_url=base_url,
             model_name=model_name,
             num_poses=2,
+            min_pose_detection_confidence=0.5,
             min_pose_presence_confidence=0.5,
             min_tracking_confidence=0.5,
             output_segmentation_masks=True,
@@ -72,6 +75,7 @@ class MediapipePoseLandmarker():
         options = mp.tasks.vision.PoseLandmarkerOptions(
             base_options=mp.tasks.BaseOptions(model_asset_path=model_path),
             num_poses=num_poses,
+            min_pose_detection_confidence=min_pose_detection_confidence,
             min_pose_presence_confidence=min_pose_presence_confidence,
             min_tracking_confidence=min_tracking_confidence,
             output_segmentation_masks=output_segmentation_masks,
@@ -186,7 +190,7 @@ class MediapipePoseLandmarker():
 
 def main():
     cap = cv2.VideoCapture(0)
-    Pose = MediapipePoseLandmarker()
+    Pose = MediapipePoseLandmark()
     while cap.isOpened():
         ret, frame = cap.read()
         if ret is False:

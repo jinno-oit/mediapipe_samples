@@ -6,10 +6,10 @@ import numpy as np
 os.environ["OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS"] = "0"
 import cv2
 import mediapipe as mp
-from MediapipeHandLandmarker import MediapipeHandLandmarker
+from MediapipeHandLandmark import MediapipeHandLandmark
 
 # https://developers.google.com/mediapipe/solutions/vision/gesture_recognizer#get_started
-class MediapipeHandGestureRecognition(MediapipeHandLandmarker):
+class MediapipeHandGestureRecognition(MediapipeHandLandmark):
     # https://storage.googleapis.com/mediapipe-models/
     base_url = 'https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/latest/'
     model_name = 'gesture_recognizer.task'

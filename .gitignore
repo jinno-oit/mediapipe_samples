@@ -1,5 +1,6 @@
 test_mediapipe/
 models/
+tmps/
 activate_env
 
 # Byte-compiled / optimized / DLL files

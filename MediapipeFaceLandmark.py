@@ -10,7 +10,7 @@ from mediapipe import solutions
 from mediapipe.framework.formats import landmark_pb2
 
 # https://developers.google.com/mediapipe/solutions/vision/face_landmarker
-class MediapipeFaceLandmarker():
+class MediapipeFaceLandmark():
     # https://storage.googleapis.com/mediapipe-models/
     base_url = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/'
     model_name = 'face_landmarker.task'
@@ -142,7 +142,7 @@ class MediapipeFaceLandmarker():
 
 def main():
     cap = cv2.VideoCapture(0)
-    Face = MediapipeFaceLandmarker()
+    Face = MediapipeFaceLandmark()
     while cap.isOpened():
         ret, frame = cap.read()
         if ret is False:

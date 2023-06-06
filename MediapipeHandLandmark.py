@@ -10,12 +10,13 @@ from mediapipe import solutions
 from mediapipe.framework.formats import landmark_pb2
 
 # https://developers.google.com/mediapipe/solutions/vision/hand_landmarker#get_started
-class MediapipeHandLandmarker():
+class MediapipeHandLandmark():
     # https://storage.googleapis.com/mediapipe-models/
     base_url = 'https://storage.googleapis.com/mediapipe-tasks/hand_landmarker/'
     model_name = 'hand_landmarker.task'
     model_folder_path = './models'
 
+    # visualize param
     H_MARGIN = 10  # pixels
     V_MARGIN = 30  # pixels
     RADIUS_SIZE = 3  # pixels
@@ -25,6 +26,7 @@ class MediapipeHandLandmarker():
     LEFT_HAND_COLOR = (100, 100, 255)
     HANDEDNESS_TEXT_COLOR = (88, 205, 54) # vibrant green
 
+    # hand landmark id
     WRIST = 0
     THUMB_CMC = 1
     THUMB_MCP = 2
@@ -178,7 +180,7 @@ class MediapipeHandLandmarker():
 
 def main():
     cap = cv2.VideoCapture(0)
-    Hand = MediapipeHandLandmarker()
+    Hand = MediapipeHandLandmark()
     while cap.isOpened():
         ret, frame = cap.read()
         if ret is False:
